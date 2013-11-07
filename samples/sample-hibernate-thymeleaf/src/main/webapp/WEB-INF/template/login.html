@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<link th:substituteby="includes :: htmlhead"/>
+	<title>Microblogger - Login</title>
+</head>
+
+<body th:with="page='login'">
+<span th:substituteby="includes :: navbar"></span>
+
+<div class="container">
+	<div th:fragment="info">
+		<h1>Login</h1>
+	</div>
+
+	<div th:if="${error}" class="alert alert-error">
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		<h4>Login Error</h4>
+		<span th:text="${error}"/>
+	</div>
+
+	<div th:if="${message}" class="alert alert-warn">
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		<h4>Login Required</h4>
+		<span th:text="${message}"/>
+	</div>
+
+	<form class="form-horizontal" method="POST" th:action="@{/login}">
+		<input
+				type="hidden"
+				id="returnTo"
+				name="returnTo"
+				th:value="${returnTo}"/>
+
+		<!-- Username -->
+		<div class="control-group">
+			<label class="control-label" for="input_email">E-mail</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_email"
+						name="email"
+						placeholder="Username"
+						value=""/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+
+		<!-- Password -->
+		<div class="control-group">
+			<label class="control-label" for="input_password">Password</label>
+
+			<div class="controls">
+				<input
+						type="password"
+						id="input_password"
+						name="password"
+						placeholder="Password"
+						value=""/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+
+		<div class="control-group">
+			<div class="controls">
+				<button type="submit" class="btn btn-primary">Login</button>
+			</div>
+		</div>
+	</form>
+
+	<footer th:substituteby="includes :: footer"></footer>
+</div>
+
+<div th:substituteby="includes :: htmlfoot"></div>
+</body>
+</html>

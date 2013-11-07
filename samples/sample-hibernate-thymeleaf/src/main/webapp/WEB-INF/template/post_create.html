@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<link th:substituteby="includes :: htmlhead"/>
+	<title>Microblogger - Create Post</title>
+</head>
+
+<body th:with="page='users'">
+<span th:substituteby="includes :: navbar"></span>
+
+<div class="container">
+	<div th:fragment="info">
+		<h1>Create Post</h1>
+	</div>
+
+
+	<form class="form-horizontal" method="POST">
+		<input type="hidden" name="replyTo" th:text="${replyToId}" />
+		<!-- comment -->
+		<div class="control-group">
+			<label class="control-label" for="input_comment">comment</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_comment"
+						name="comment"
+						placeholder=""
+						value=""/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<button type="submit" class="btn btn-primary">Post</button>
+				<button type="reset" class="btn">Reset</button>
+			</div>
+		</div>
+	</form>
+
+
+	<footer th:substituteby="includes :: footer"></footer>
+</div>
+
+<div th:substituteby="includes :: htmlfoot"></div>
+</body>
+</html>

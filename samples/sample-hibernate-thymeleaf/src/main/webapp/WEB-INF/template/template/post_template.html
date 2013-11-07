@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>PostEntity Includes</title>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<link href="bootstrap.min.css" rel="stylesheet" media="screen"/>
+</head>
+
+<body id="top">
+<div class="container">
+	<h2>Render PostEntity as Definition List</h2>
+
+	<dl class="dl-horizontal" th:fragment="render_dd">
+		<dt>id</dt>
+		<dd th:text="${entity.id}">id</dd>
+		<dt>poster</dt>
+		<dd th:text="${entity.poster}">poster</dd>
+		<dt>posted</dt>
+		<dd th:text="${entity.posted}">posted</dd>
+		<dt>replyTo</dt>
+		<dd th:text="${entity.replyTo}">replyTo</dd>
+		<dt>comment</dt>
+		<dd th:text="${entity.comment}">comment</dd>
+		<dt>version</dt>
+		<dd th:text="${entity.version}">version</dd>
+	</dl>
+
+	<h2>Render PostEntity as Editable Form</h2>
+
+	<form class="form-horizontal" method="POST" th:fragment="render_form">
+		<!-- id -->
+		<div class="control-group">
+			<label class="control-label" for="input_id">id</label>
+
+			<div class="controls">
+				<input
+						type="number"
+						id="input_id"
+						name="id"
+						disabled="disabled"
+						placeholder=""
+						th:value="${entity.id}"/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<!-- poster -->
+		<div class="control-group">
+			<label class="control-label" for="input_poster">poster</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_poster"
+						name="poster"
+						placeholder=""
+						th:value="${entity.poster}"/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<!-- posted -->
+		<div class="control-group">
+			<label class="control-label" for="input_posted">posted</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_posted"
+						name="posted"
+						placeholder=""
+						th:value="${entity.posted}"/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<!-- replyTo -->
+		<div class="control-group">
+			<label class="control-label" for="input_replyTo">replyTo</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_replyTo"
+						name="replyTo"
+						placeholder=""
+						th:value="${entity.replyTo}"/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<!-- comment -->
+		<div class="control-group">
+			<label class="control-label" for="input_comment">comment</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_comment"
+						name="comment"
+						placeholder=""
+						th:value="${entity.comment}"/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<button type="submit" class="btn btn-primary">Submit</button>
+				<button type="reset" class="btn">Reset</button>
+			</div>
+		</div>
+	</form>
+
+
+	<h2>Render List of PostEntity as Table</h2>
+
+
+	<table class="table table-striped" th:fragment="render_list_table">
+		<thead>
+		<tr>
+			<th>id</th>
+			<th>poster</th>
+			<th>posted</th>
+			<th>replyTo</th>
+			<th>comment</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr th:each="entity: ${entities}">
+			<td th:text="${entity.id}">id</td>
+			<td th:text="${entity.poster}">poster</td>
+			<td th:text="${entity.posted}">posted</td>
+			<td th:text="${entity.replyTo}">replyTo</td>
+			<td th:text="${entity.comment}">comment</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</body>
+</html>

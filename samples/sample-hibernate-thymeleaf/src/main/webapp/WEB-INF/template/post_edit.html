@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<link th:substituteby="includes :: htmlhead"/>
+	<title>Microblogger - Edit Post</title>
+</head>
+
+<body th:with="page='posts'">
+<span th:substituteby="includes :: navbar"></span>
+
+<div class="container">
+	<div th:fragment="info">
+		<h1>Edit Post <span th:text="${entity.id}">...</span></h1>
+	</div>
+
+	<div th:substituteby="template/post_template :: render_form"/>
+
+	<footer th:substituteby="includes :: footer"></footer>
+</div>
+
+<div th:substituteby="includes :: htmlfoot"></div>
+</body>
+</html>

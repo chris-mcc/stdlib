@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.peterphi.std.guice</groupId>
-	<artifactId>stdlib-sample-rest-service</artifactId>
+	<artifactId>stdlib-sample-hibernate-thymeleaf</artifactId>
 	<version>5.0.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 
-	<name>sample rest service</name>
-	<description>sample rest service</description>
+	<name>sample Hibernate and Thymeleaf application</name>
+	<description>sample Hibernate and Thymeleaf application</description>
 
 	<parent>
 		<groupId>com.peterphi.std.guice</groupId>
@@ -21,6 +21,19 @@
 			<groupId>com.peterphi.std.guice</groupId>
 			<artifactId>stdlib-guice-thymeleaf</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.peterphi.std.guice</groupId>
+			<artifactId>stdlib-guice-hibernate</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

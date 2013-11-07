@@ -17,5 +17,6 @@
 	
 	<modules>
 		<module>sample-rest-service</module>
+		<module>sample-hibernate-thymeleaf</module>
 	</modules>
 </project>

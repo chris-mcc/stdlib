@@ -1,0 +1,14 @@
+/* display empty dd elements in a dl */
+.dl-horizontal > dd:after {
+  display: table;
+  content: "";
+  clear: both;
+}
+
+.control-group .controls div.fakecontrol {
+    margin-top: 5px;
+}
+
+th.sortable {
+    cursor: pointer;
+}

@@ -15,6 +15,20 @@ endif
 all: install
 
 #
+# Test targets
+#
+
+dmicroblogger: microblogger
+	/opt/tomcat/bin/kill.sh
+	rm -rf /opt/tomcat/webapps/microblogger*
+	cp samples/sample-hibernate-thymeleaf/target/*.war /opt/tomcat/webapps/microblogger.war
+	/opt/tomcat/bin/start.sh
+
+microblogger:
+	$(MVN) clean package --projects samples/sample-hibernate-thymeleaf
+
+
+#
 #
 # Standard Maven targets
 #

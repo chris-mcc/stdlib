@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<link th:substituteby="includes :: htmlhead"/>
+	<title>Microblogger - Home</title>
+</head>
+<body>
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an old browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a
+		href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.
+</p>
+<![endif]-->
+<div th:substituteby="includes :: navbar"/>
+
+<div class="hero">
+	<div class="container">
+		<h1>Welcome</h1>
+
+		<p>Microblogging example service.</p>
+	</div>
+</div>
+
+<footer th:substituteby="includes :: footer"/>
+
+<div th:substituteby="includes :: htmlfoot"/>
+</body>
+</html>

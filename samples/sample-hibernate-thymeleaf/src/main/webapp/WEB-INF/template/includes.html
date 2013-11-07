@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<meta th:fragment="htmlhead" charset="utf-8"/>
+	<meta th:fragment="htmlhead" http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<meta th:fragment="htmlhead" name="description" content=""/>
+	<meta th:fragment="htmlhead" name="viewport" content="width=device-width"/>
+
+	<link th:fragment="htmlhead" rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+	<style th:fragment="htmlhead">
+		body {
+			padding-top: 60px;
+			padding-bottom: 40px;
+		}
+	</style>
+	<link th:fragment="htmlhead" rel="stylesheet" th:href="@{/css/bootstrap-responsive.min.css}"/>
+	<link th:fragment="htmlhead" rel="stylesheet" th:href="@{/css/main.css}"/>
+
+	<script th:fragment="htmlhead" th:src="@{/js/vendor/modernizr-2.6.1-respond-1.1.0.min.js}"></script>
+	<script th:fragment="htmlhead" th:src="@{/js/vendor/jquery-1.8.2.min.js}"></script>
+
+	<link th:fragment="chosen" rel="stylesheet" th:href="@{/js/vendor/select2/select2.css}"/>
+	<script th:fragment="chosen" th:src="@{/js/vendor/select2/select2.min.js}"></script>
+	<script th:fragment="chosen" type="text/javascript">
+		$(document).ready(function () {
+			$("select").select2({minimumResultsForSearch: 5});
+		});
+	</script>
+</head>
+<body>
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an old browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a
+		href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.
+</p>
+<![endif]-->
+<div th:fragment="navbar" class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="brand" th:href="@{/}">Microblogger&trade;</a>
+
+			<div class="nav-collapse collapse">
+				<ul class="nav">
+					<li th:class="${page} == 'home' ? 'active'"><a th:href="@{/}">Home</a></li>
+					<li th:class="${page} == 'post' ? 'active'"><a th:href="@{/posts}">Posts</a>
+					</li>
+					<li th:class="${page} == 'user' ? 'active'"><a th:href="@{/users}">Users</a></li>
+				</ul>
+
+				<form th:if="${page != 'login' and session.user.anonymous}" class="navbar-form pull-right"
+				      th:action="@{/login}" method="POST">
+					<input class="span2" name="id" type="text" placeholder="Username"/>
+					<input class="span2" name="password" type="password" placeholder="Password"/>
+					<button type="submit" class="btn">Log in</button>
+				</form>
+				<form th:if="${!session.user.anonymous}" id="logoutForm" method="POST" th:action="@{/logout}"
+				      style="display: none;"/>
+				<div th:if="${!session.user.anonymous}" class="btn-group navbar-text pull-right">
+					<a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="icon-user icon-white"></i> <span th:text="${session.user.name}"/> <span class="caret"/>
+					</a>
+
+					<ul class="dropdown-menu">
+						<li><a th:href="@{'/user/'+${session.user.username}+'/change_password'}">Change Password</a></li>
+						<li><a href="javascript:$('#logoutForm').submit()">Log out</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="container">
+	Content would be here
+
+
+	<script th:fragment="pagerscript" th:inline="javascript">
+		//<![CDATA[
+		var constraintMap = /*[[${resultset.getConstraint().getParameters()}]]*/ {};
+		var pageOffset = /*[[${resultset.offset}]]*/ 0;
+		var pageLimit = /*[[${resultset.limit}]]*/ 100;
+
+		function setConstraints(newValues, includePrevious) {
+			var params = {};
+
+			if (includePrevious) {
+				for (var key in constraintMap)
+					params[key] = constraintMap[key];
+			}
+
+			for (var key in newValues)
+				params[key] = newValues[key];
+
+			window.location = window.location.href.split('?')[0] + "?" + $.param(params, true);
+		}
+
+		function changePage(delta) {
+			var newOffset = pageOffset + (delta * pageLimit);
+
+			// Don't go before the first page
+			if (newOffset < 0)
+				newOffset = 0;
+
+			setConstraints({_offset: newOffset, _limit: pageLimit}, true);
+		}
+
+		function resortColumn(e) {
+			var columnName = $(this).data("sort-name");
+
+			var sortValue = columnName + " asc";
+
+			// If we're already sorting this way then reverse the sort
+			if (constraintMap["_order"] == sortValue) {
+				sortValue = columnName + " desc";
+			}
+
+			// Change the sorting
+			setConstraints({_order: sortValue, _offset: 0}, true);
+		}
+
+		$(document).ready(function () {
+			var sorts = constraintMap["_order"];
+
+			$("th.sortable").each(function () {
+				var col = $(this);
+
+				col.click(resortColumn);
+
+				var colField = col.data("sort-name");
+
+				var asc = colField + " asc";
+				var desc = colField + " desc";
+
+				if ($.inArray(asc, sorts) != -1) {
+					col.prepend('<i class="icon-chevron-up"></i>');
+				}
+				else if ($.inArray(desc, sorts) != -1) {
+					col.prepend('<i class="icon-chevron-down"></i>');
+				}
+			});
+		});
+
+		//]]>
+	</script>
+
+	<ul class="pager" th:fragment="pager">
+		<li class="previous" th:if="${resultset.offset != 0}">
+			<a href="#" onclick="changePage(-1)">&larr; Previous</a>
+		</li>
+		<li class="next" th:if="${resultset.list.size() == resultset.limit}">
+			<a href="#" onclick="changePage(1)">Next &rarr;</a>
+		</li>
+	</ul>
+
+	<footer th:fragment="footer">
+
+	</footer>
+
+</div>
+
+<script th:fragment="htmlfoot" th:src="@{/js/vendor/bootstrap.min.js}"></script>
+<script th:fragment="htmlfoot" th:src="@{/js/main.js}"></script>
+</body>
+</html>

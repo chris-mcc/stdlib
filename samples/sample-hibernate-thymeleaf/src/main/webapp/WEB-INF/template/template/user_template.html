@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>UserEntity Includes</title>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<link href="bootstrap.min.css" rel="stylesheet" media="screen"/>
+</head>
+
+<body id="top">
+<div class="container">
+
+
+	<h2>Render UserEntity as Definition List</h2>
+
+	<dl class="dl-horizontal" th:fragment="render_dd">
+		<dt>id</dt>
+		<dd th:text="${entity.id}">id</dd>
+		<dt>full name</dt>
+		<dd th:text="${entity.name}">name</dd>
+		<dt>passwordHash</dt>
+		<dd th:text="${entity.passwordHash}">passwordHash</dd>
+		<dt>version</dt>
+		<dd th:text="${entity.version}">version</dd>
+	</dl>
+
+	<h2>Render UserEntity as Editable Form</h2>
+
+	<form class="form-horizontal" method="POST" th:fragment="render_form">
+		<!-- id -->
+		<div class="control-group">
+			<label class="control-label" for="input_id">id</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_id"
+						name="id"
+						placeholder=""
+						disabled="disabled"
+						th:value="${entity.id}"/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<!-- name -->
+		<div class="control-group">
+			<label class="control-label" for="input_name">name</label>
+
+			<div class="controls">
+				<input
+						type="text"
+						id="input_name"
+						name="name"
+						placeholder=""
+						th:value="${entity.name}"/>
+
+				<!-- Help / Warning text -->
+				<span class="help-inline"></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<button type="submit" class="btn btn-primary">Submit</button>
+				<button type="reset" class="btn">Reset</button>
+			</div>
+		</div>
+	</form>
+
+
+	<h2>Render List of UserEntity as Table</h2>
+
+
+	<table class="table table-striped" th:fragment="render_list_table">
+		<thead>
+		<tr>
+			<th>username</th>
+			<th>full name</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr th:each="entity: ${entities}">
+			<td th:text="${entity.id}">id</td>
+			<td th:text="${entity.name}">name</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</body>
+</html>

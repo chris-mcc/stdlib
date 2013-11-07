@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<link th:substituteby="includes :: htmlhead"/>
+	<title>Microblogger - User</title>
+</head>
+<body th:with="page='users'">
+<span th:substituteby="includes :: navbar"></span>
+
+<div class="container">
+	<h1>User <span th:text="${entity.id}">...</span></h1>
+
+	<ul class="nav nav-pills">
+		<li><a shape="rect" th:href="@{'/user/'+${entity.id}+'/edit'}">Edit</a></li>
+	</ul>
+
+	<div th:substituteby="template/user_template :: render_dd"/>
+
+	<footer th:substituteby="includes :: footer"></footer>
+</div>
+
+<div th:substituteby="includes :: htmlfoot"></div>
+</body>
+</html>
