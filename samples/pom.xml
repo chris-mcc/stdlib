@@ -1,0 +1,21 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>com.peterphi.std.guice</groupId>
+	<artifactId>stdlib-samples-parent</artifactId>
+	<version>5.0.2-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	
+	<name>application framework samples parent</name>
+	<description>Application Framework Samples (Parent Package)</description>
+	
+	<parent>
+		<groupId>com.peterphi.std</groupId>
+		<artifactId>stdlib-parent</artifactId>
+		<version>5.0.2-SNAPSHOT</version>
+	</parent>
+	
+	<modules>
+		<module>sample-rest-service</module>
+	</modules>
+</project>

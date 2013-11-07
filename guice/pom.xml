@@ -57,6 +57,5 @@
 		<module>thymeleaf</module>
 		<module>hibernate</module>
 		<module>restclient</module>
-		<module>sample-rest-service</module>
 	</modules>
 </project>
