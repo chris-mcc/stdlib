@@ -23,13 +23,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		
-		<!-- Allow us to use the Index Service -->
-		<dependency>
-			<groupId>com.peterphi.std.index</groupId>
-			<artifactId>index-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
