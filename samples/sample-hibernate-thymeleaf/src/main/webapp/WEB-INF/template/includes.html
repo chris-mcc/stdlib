@@ -73,6 +73,7 @@
 
 					<ul class="dropdown-menu">
 						<li><a th:href="@{'/user/'+${session.user.username}+'/change_password'}">Change Password</a></li>
+						<li><a th:href="@{/posts(poster.id=${session.user.username},_order='posted desc')}">My Posts</a></li>
 						<li><a href="javascript:$('#logoutForm').submit()">Log out</a></li>
 					</ul>
 				</div>
