@@ -1,26 +1,107 @@
 package com.peterphi.std.guice.restclient;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.peterphi.std.io.PropertyFile;
+
+import javax.ws.rs.client.WebTarget;
+import java.net.URI;
+
 /**
- * A factory that builds dynamic proxy clients (using JAX-RS RESTful client interfaces) for services, abstracting away the method through which client endpoints, credentials, etc. are acquired
+ * A service client for RESTful services by name (reading
  */
-public interface RestClientFactory
+@Singleton
+public class RestClientFactory
 {
-	/**
-	 * Create or retrieve a client for the service interface provided<br />
-	 * This method only works where a single service for this interface has been configured. For more complex situations, use <code>getClient(iface, name)</code>
-	 * 
-	 * @param iface
-	 * @return
-	 */
-	public <T> T getClient(final Class<T> iface);
+	@Inject
+	JAXRSClientFactory clientFactory;
+
+
+	@Inject
+	@Named("service.properties")
+	PropertyFile properties;
+
 
 	/**
-	 * Create or retrieve a client for the service interface, with the underlying REST service identified by <code>name</code>
-	 * 
-	 * @param iface
+	 * Create a JAX-RS WebTarget for a given service name
+	 *
 	 * @param name
-	 *            the service name
+	 * 		the name of the service connection
+	 *
 	 * @return
 	 */
-	public <T> T getClient(final Class<T> iface, String name);
+	public WebTarget target(String name)
+	{
+		final URI endpoint = getEndpoint(name);
+
+		return clientFactory.client().target(endpoint);
+	}
+
+
+	/**
+	 * Create a proxy client for the default implementation of an interface
+	 *
+	 * @param iface
+	 * 		the service interface class
+	 * @param <T>
+	 *
+	 * @return
+	 */
+	public <T> T proxy(final Class<T> iface)
+	{
+		final String name = getName(iface);
+
+		return proxy(iface, name);
+	}
+
+
+	/**
+	 * Create a proxy client for a named implementation of an interface
+	 *
+	 * @param iface
+	 * 		the service interface class
+	 * @param name
+	 * 		the name of the service connection
+	 * @param <T>
+	 *
+	 * @return
+	 */
+	public <T> T proxy(final Class<T> iface, String name)
+	{
+		final URI endpoint = getEndpoint(name);
+
+		return clientFactory.proxy(iface, endpoint);
+	}
+
+
+	/**
+	 * Get the default name of the service by its interface
+	 *
+	 * @param iface
+	 *
+	 * @return
+	 */
+	protected String getName(Class<?> iface)
+	{
+		return iface.getSimpleName();
+	}
+
+
+	/**
+	 * Retrieve the endpoint of a service by name
+	 *
+	 * @param name
+	 *
+	 * @return
+	 */
+	protected URI getEndpoint(String name)
+	{
+		final URI uri = properties.getURI("service." + name + ".endpoint", null);
+
+		if (uri != null)
+			return uri;
+		else
+			throw new IllegalArgumentException("No service found by name: " + name);
+	}
 }

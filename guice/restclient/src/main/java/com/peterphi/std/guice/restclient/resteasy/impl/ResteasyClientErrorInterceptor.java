@@ -1,21 +1,22 @@
 package com.peterphi.std.guice.restclient.resteasy.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.jboss.resteasy.client.ClientResponse;
-import org.jboss.resteasy.client.ClientResponseFailure;
-import org.jboss.resteasy.client.core.BaseClientResponse;
-import org.jboss.resteasy.client.core.ClientErrorInterceptor;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.peterphi.std.guice.restclient.exception.RestException;
 import com.peterphi.std.guice.restclient.exception.RestExceptionFactory;
 import com.peterphi.std.guice.restclient.exception.RestThrowableConstants;
 import com.peterphi.std.guice.restclient.jaxb.RestFailure;
+import org.jboss.resteasy.client.ClientResponse;
+import org.jboss.resteasy.client.ClientResponseFailure;
+import org.jboss.resteasy.client.core.BaseClientResponse;
+import org.jboss.resteasy.client.core.ClientErrorInterceptor;
+
+import javax.ws.rs.ext.Provider;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Singleton
+@Provider
 public class ResteasyClientErrorInterceptor implements ClientErrorInterceptor
 {
 	private final RestExceptionFactory exceptionFactory;
