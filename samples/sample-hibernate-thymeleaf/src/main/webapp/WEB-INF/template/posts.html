@@ -23,7 +23,10 @@
 		<li><a shape="rect" th:href="@{/posts/create}">Add</a></li>
 	</ul>
 
+	<div th:substituteby="includes :: pagerscript"/>
+	<div th:substituteby="includes :: pager"/>
 	<div th:substituteby="template/post_template :: render_list_table"/>
+	<div th:substituteby="includes :: pager"/>
 
 	<footer th:substituteby="includes :: footer"></footer>
 </div>
