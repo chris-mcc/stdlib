@@ -18,8 +18,6 @@
 		<dd th:text="${entity.id}">id</dd>
 		<dt>full name</dt>
 		<dd th:text="${entity.name}">name</dd>
-		<dt>passwordHash</dt>
-		<dd th:text="${entity.passwordHash}">passwordHash</dd>
 		<dt>version</dt>
 		<dd th:text="${entity.version}">version</dd>
 	</dl>
@@ -81,7 +79,7 @@
 		</thead>
 		<tbody>
 		<tr th:each="entity: ${entities}">
-			<td th:text="${entity.id}">id</td>
+			<td><a th:href="@{'/user/'+${entity.id}}" th:text="${entity.id}">id</a></td>
 			<td th:text="${entity.name}">name</td>
 		</tr>
 		</tbody>

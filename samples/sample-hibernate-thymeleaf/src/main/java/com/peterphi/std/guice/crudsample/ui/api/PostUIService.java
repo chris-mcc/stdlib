@@ -51,5 +51,5 @@ public interface PostUIService
 	@Path("/posts/create")
 	@Produces(MediaType.TEXT_HTML)
 	@Doc("Create a new entity")
-	public Response doCreate(@FormParam("replyTo") @DefaultValue("") String replyToId, @FormParam("comment") String comment);
+	public Response doCreate(@FormParam("replyToId") @DefaultValue("") String replyToId, @FormParam("comment") String comment);
 }

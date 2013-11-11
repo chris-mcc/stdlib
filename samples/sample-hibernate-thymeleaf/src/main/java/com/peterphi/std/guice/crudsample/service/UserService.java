@@ -21,6 +21,8 @@ public class UserService
 	@Inject
 	UserDao dao;
 
+	int bcryptRounds = 12;
+
 
 	@Transactional
 	public void login(WebappUser user, String id, String password)
@@ -51,11 +53,35 @@ public class UserService
 
 		entity.setId(normalise(id));
 		entity.setName(name);
-		entity.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt()));
+		entity.setPasswordHash(hash(password));
 
 		dao.save(entity);
 
 		return entity.getId();
+	}
+
+
+	@Transactional
+	public void changePassword(final String id, final String password)
+	{
+		final UserEntity entity = dao.getById(normalise(id));
+
+		if (entity != null)
+		{
+			entity.setPasswordHash(hash(password));
+
+			dao.update(entity);
+		}
+		else
+		{
+			throw new IllegalArgumentException("No such user: " + id);
+		}
+	}
+
+
+	protected String hash(String password)
+	{
+		return BCrypt.hashpw(password, BCrypt.gensalt(bcryptRounds));
 	}
 
 

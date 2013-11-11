@@ -19,6 +19,7 @@
 
 	<ul class="nav nav-pills">
 		<li><a shape="rect" th:href="@{'/post/'+${entity.id}+'/edit'}">Edit</a></li>
+		<li><a shape="rect" th:href="@{/posts/create(replyTo=${entity.id})}">Reply</a></li>
 	</ul>
 
 	<div th:substituteby="template/post_template :: render_dd"/>

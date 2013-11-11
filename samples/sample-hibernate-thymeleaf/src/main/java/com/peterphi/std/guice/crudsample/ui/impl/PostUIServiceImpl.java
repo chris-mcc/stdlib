@@ -100,6 +100,7 @@ public class PostUIServiceImpl implements PostUIService
 	@Transactional
 	public Response doCreate(final String replyToId, final String comment)
 	{
+		System.out.println("doCreate " + replyToId + ", " + comment);
 		final PostEntity entity = new PostEntity();
 
 		if (StringUtils.isNotEmpty(replyToId))

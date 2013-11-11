@@ -85,6 +85,24 @@ public class UserUIServiceImpl implements UserUIService
 
 
 	@Override
+	public String getChangePassword()
+	{
+		TemplateCall call = templater.template("user_changepassword");
+
+		return call.process();
+	}
+
+
+	@Override
+	public Response doChangePassword(String id, String password)
+	{
+		userService.changePassword(id, password);
+
+		return Response.seeOther(URI.create("/")).build();
+	}
+
+
+	@Override
 	public String getCreate()
 	{
 		TemplateCall call = templater.template("user_create");

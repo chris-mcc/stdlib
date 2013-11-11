@@ -40,6 +40,19 @@ public interface UserUIService
 	public String getEdit(@PathParam("id") String id);
 
 	@GET
+	@Path("/users/change_password")
+	@Produces(MediaType.TEXT_HTML)
+	@Doc("Get a change password form")
+	public String getChangePassword();
+
+	@POST
+	@Path("/users/change_password")
+	@Produces(MediaType.TEXT_HTML)
+	@Doc("Get a change password form")
+	public Response doChangePassword(@FormParam("id") String id, @FormParam("password") String password);
+
+
+	@GET
 	@Path("/users/create")
 	@Produces(MediaType.TEXT_HTML)
 	@Doc("Get a create form for a particular entity")

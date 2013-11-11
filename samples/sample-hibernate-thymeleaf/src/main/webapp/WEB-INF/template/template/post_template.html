@@ -15,11 +15,11 @@
 		<dt>id</dt>
 		<dd th:text="${entity.id}">id</dd>
 		<dt>poster</dt>
-		<dd th:text="${entity.poster}">poster</dd>
+		<dd><a th:href="@{'/user/'+${entity.poster.id}}" th:text="${entity.poster.id}">poster</a></dd>
 		<dt>posted</dt>
 		<dd th:text="${entity.posted}">posted</dd>
-		<dt>replyTo</dt>
-		<dd th:text="${entity.replyTo}">replyTo</dd>
+		<dt th:if="${entity.replyTo}">replyTo</dt>
+		<dd th:if="${entity.replyTo}"><a th:href="@{'/post/'+${entity.replyTo.id}}" th:text="${entity.replyTo.id}">replyTo</a></dd>
 		<dt>comment</dt>
 		<dd th:text="${entity.comment}">comment</dd>
 		<dt>version</dt>
@@ -55,6 +55,7 @@
 						type="text"
 						id="input_poster"
 						name="poster"
+						disabled="disabled"
 						placeholder=""
 						th:value="${entity.poster}"/>
 
@@ -71,6 +72,7 @@
 						type="text"
 						id="input_posted"
 						name="posted"
+						disabled="disabled"
 						placeholder=""
 						th:value="${entity.posted}"/>
 
@@ -87,6 +89,7 @@
 						type="text"
 						id="input_replyTo"
 						name="replyTo"
+						disabled="disabled"
 						placeholder=""
 						th:value="${entity.replyTo}"/>
 
@@ -128,16 +131,14 @@
 			<th>id</th>
 			<th>poster</th>
 			<th>posted</th>
-			<th>replyTo</th>
 			<th>comment</th>
 		</tr>
 		</thead>
 		<tbody>
 		<tr th:each="entity: ${entities}">
-			<td th:text="${entity.id}">id</td>
-			<td th:text="${entity.poster}">poster</td>
+			<td><a th:href="@{'/post/'+${entity.id}}" th:text="${entity.id}">id</a></td>
+			<td><a th:href="@{'/user/'+${entity.poster.id}}" th:text="${entity.poster.id}">poster</a></td>
 			<td th:text="${entity.posted}">posted</td>
-			<td th:text="${entity.replyTo}">replyTo</td>
 			<td th:text="${entity.comment}">comment</td>
 		</tr>
 		</tbody>
