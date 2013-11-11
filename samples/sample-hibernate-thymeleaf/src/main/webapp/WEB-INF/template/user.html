@@ -19,6 +19,7 @@
 
 	<ul class="nav nav-pills">
 		<li><a shape="rect" th:href="@{'/user/'+${entity.id}+'/edit'}">Edit</a></li>
+		<li><a shape="rect" th:href="@{/posts(poster.id=${entity.id},_order='posted desc')}">Posts</a></li>
 	</ul>
 
 	<div th:substituteby="template/user_template :: render_dd"/>
