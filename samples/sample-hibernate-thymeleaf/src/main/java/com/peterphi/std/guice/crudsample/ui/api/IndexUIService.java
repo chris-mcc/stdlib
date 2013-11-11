@@ -21,7 +21,7 @@ public interface IndexUIService
 	@Produces(MediaType.TEXT_HTML)
 	public String getIndex();
 
-	@GET
+	@POST
 	@Path("/")
 	@Produces(MediaType.TEXT_HTML)
 	public Response doLogout();
