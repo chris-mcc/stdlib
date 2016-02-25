@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.log4j.Logger;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
 import java.net.URI;
@@ -20,6 +21,7 @@ import java.util.Objects;
 @Singleton
 public class ResteasyProxyClientFactoryImpl implements JAXRSProxyClientFactory
 {
+	Logger log = Logger.getLogger(ResteasyProxyClientFactoryImpl.class);
 	@Inject
 	ResteasyClientFactoryImpl clientFactory;
 
@@ -90,7 +92,7 @@ public class ResteasyProxyClientFactoryImpl implements JAXRSProxyClientFactory
 	public <T> T getClient(final Class<T> iface, final String... names)
 	{
 		final boolean fastFail = iface.isAnnotationPresent(FastFailServiceClient.class);
-
+		log.info("Fast-fail? " + fastFail + " for: " + iface.getSimpleName());
 		return getWebTarget(fastFail, names).proxy(iface);
 	}
 
@@ -172,10 +174,13 @@ public class ResteasyProxyClientFactoryImpl implements JAXRSProxyClientFactory
 			else
 				credentials = new UsernamePasswordCredentials(endpoint.getAuthority());
 
+			log.info("Fast-fail? " + fastFail + " for: " + endpoint.toString());
 			return clientFactory.getOrCreateClient(fastFail, scope, credentials, preemptiveAuth, null).target(endpoint);
 		}
-		else
+		else {
+			log.info("Fast-fail? " + fastFail + " for: " + endpoint.toString());
 			return clientFactory.getOrCreateClient(fastFail, null, null, false, null).target(endpoint);
+		}
 	}
 
 
@@ -216,7 +221,7 @@ public class ResteasyProxyClientFactoryImpl implements JAXRSProxyClientFactory
 	                                          final boolean preemptiveAuth)
 	{
 		final boolean fastFail = iface.isAnnotationPresent(FastFailServiceClient.class);
-
+		log.info("Fast-fail? " + fastFail + " for: " + endpoint.toString());
 		return createWebTarget(endpoint, fastFail, username, password, preemptiveAuth).proxy(iface);
 	}
 

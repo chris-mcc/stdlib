@@ -8,13 +8,11 @@ import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Named;
 import com.peterphi.std.annotation.Doc;
 import com.peterphi.std.guice.apploader.GuiceProperties;
+import com.peterphi.std.guice.common.introspective.type.DatabaseIntrospectiveInfo;
 import com.peterphi.std.guice.common.serviceprops.ConfigurationConverter;
 import com.peterphi.std.guice.database.annotation.Transactional;
-import com.peterphi.std.guice.hibernate.usertype.DateUserType;
-import com.peterphi.std.guice.hibernate.usertype.JodaDateTimeUserType;
-import com.peterphi.std.guice.hibernate.usertype.JodaLocalDateUserType;
-import com.peterphi.std.guice.hibernate.usertype.SampleCountUserType;
-import com.peterphi.std.guice.hibernate.usertype.TimecodeUserType;
+import com.peterphi.std.guice.hibernate.introspective.HibernateIntrospectiveInfoRetriever;
+import com.peterphi.std.guice.hibernate.usertype.*;
 import com.peterphi.std.io.PropertyFile;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -44,7 +42,6 @@ public abstract class HibernateModule extends AbstractModule
 	{
 		bind(ServiceRegistry.class).toProvider(HibernateServiceRegistryProvider.class).in(Singleton.class);
 		bind(SessionFactory.class).toProvider(HibernateSessionFactoryProvider.class).in(Singleton.class);
-
 		bind(Session.class).toProvider(SessionProvider.class);
 		bind(Transaction.class).toProvider(TransactionProvider.class);
 
@@ -52,6 +49,7 @@ public abstract class HibernateModule extends AbstractModule
 
 		// handles @Transactional methods
 		binder().bindInterceptor(Matchers.any(), Matchers.annotatedWith(Transactional.class), interceptor);
+		bind(HibernateIntrospectiveInfoRetriever.class);
 	}
 
 
@@ -121,4 +119,10 @@ public abstract class HibernateModule extends AbstractModule
 	 * @param config
 	 */
 	protected abstract void configure(Configuration config);
+
+	@Provides
+	public DatabaseIntrospectiveInfo get(HibernateIntrospectiveInfoRetriever infoRetriever)
+	{
+		return infoRetriever.getIntrospectiveInfo();
+	}
 }

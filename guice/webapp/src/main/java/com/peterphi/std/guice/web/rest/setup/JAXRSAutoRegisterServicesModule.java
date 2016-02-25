@@ -8,6 +8,7 @@ import com.google.inject.util.Types;
 import com.peterphi.std.guice.common.ClassScannerFactory;
 import com.peterphi.std.guice.restclient.resteasy.impl.ResteasyProxyClientFactoryImpl;
 import com.peterphi.std.guice.serviceregistry.rest.RestResourceRegistry;
+import com.peterphi.std.guice.common.rest.annotation.IgnoreRestInterface;
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
@@ -50,7 +51,11 @@ class JAXRSAutoRegisterServicesModule extends AbstractModule
 		{
 			try
 			{
-				autobind(iface);
+				//Used to ignore base Rest interfaces
+				if(!iface.isAnnotationPresent(IgnoreRestInterface.class))
+				{
+					autobind(iface);
+				}
 			}
 			catch (Exception e)
 			{

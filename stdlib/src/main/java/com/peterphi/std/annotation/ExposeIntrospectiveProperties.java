@@ -5,20 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+//opt-in
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE})
-public @interface IndexServerProperty {
-    /**
-     * A property Name
-     *
-     * @return
-     */
-    String name();
-
-    /**
-     * The property key to look up
-     *
-     * @return
-     */
-    String propertyKey();
+public @interface ExposeIntrospectiveProperties {
 }

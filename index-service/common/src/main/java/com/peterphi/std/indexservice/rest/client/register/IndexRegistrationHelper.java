@@ -4,8 +4,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.peterphi.std.annotation.Doc;
+import com.peterphi.std.annotation.ExposeIntrospectiveProperties;
 import com.peterphi.std.annotation.IndexServerProperty;
 import com.peterphi.std.guice.apploader.GuiceProperties;
+import com.peterphi.std.guice.common.introspective.IntrospectiveInfoRegistry;
+import com.peterphi.std.guice.common.introspective.type.DatabaseIntrospectiveInfo;
 import com.peterphi.std.guice.serviceregistry.index.IndexableServiceRegistry;
 import com.peterphi.std.guice.serviceregistry.index.ManualIndexableService;
 import com.peterphi.std.indexservice.rest.client.IndexServiceClient;
@@ -16,7 +19,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Singleton
@@ -38,6 +43,9 @@ public class IndexRegistrationHelper
 	@Named("local.restservices.endpoint")
 	@Doc("The local endpoint for REST service communication to this servlet (computed and bound automatically)")
 	protected URI baseEndpoint;
+
+	@Inject(optional = true)
+	private IntrospectiveInfoRegistry introspectiveInfoRegistry;
 
 	@Inject
 	Configuration configuration;
@@ -230,7 +238,37 @@ public class IndexRegistrationHelper
                 propertyList.properties.add(new PropertyValue(property.name(),propertyValue));
             }
 		}
+		ExposeIntrospectiveProperties exposeProperties = resource.getAnnotation(ExposeIntrospectiveProperties.class);
+		if(exposeProperties != null)
+		{
+			log.info("Adding introspective info for Rest interface " + resource.getSimpleName());
+			propertyList.properties.addAll(getIntrospectiveProperties());
+		}
         return propertyList;
+	}
+
+	private List<PropertyValue> getIntrospectiveProperties()
+	{
+		List<PropertyValue> values = new ArrayList<>();
+		if(introspectiveInfoRegistry == null)
+		{
+			log.info("Introspective info is not available");
+			return values;
+		}
+		DatabaseIntrospectiveInfo databaseIntrospectiveInfo = introspectiveInfoRegistry.getDatabaseIntrospectiveInfo();
+		if(databaseIntrospectiveInfo != null)
+		{
+			log.info("Adding database introspective info");
+			String dbUrl = introspectiveInfoRegistry.getDatabaseIntrospectiveInfo().dataBaseUrl;
+			String dbUser = introspectiveInfoRegistry.getDatabaseIntrospectiveInfo().dbUsername;
+			values.add(new PropertyValue(IndexableIntrospectiveProperties.DATABASE_URL, dbUrl));
+			values.add(new PropertyValue(IndexableIntrospectiveProperties.DATABASE_USERNAME,dbUser));
+		}
+		else
+		{
+			log.info("Database introspective info is not available");
+		}
+		return values;
 	}
 
     protected PropertyList buildPropertyList(String prefix)

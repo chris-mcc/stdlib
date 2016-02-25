@@ -7,6 +7,7 @@ import com.google.inject.Stage;
 import com.peterphi.std.guice.apploader.GuiceRole;
 import com.peterphi.std.guice.apploader.GuiceSetup;
 import com.peterphi.std.guice.common.ClassScannerFactory;
+import com.peterphi.std.guice.common.IntrospectiveModule;
 import com.peterphi.std.guice.common.JAXBModule;
 import com.peterphi.std.guice.common.Log4JModule;
 import com.peterphi.std.guice.common.lifecycle.GuiceLifecycleModule;
@@ -50,6 +51,7 @@ class CoreGuiceRole implements GuiceRole
 		modules.add(new CoreMetricsModule(metrics));
 		modules.add(new RetryModule(metrics));
 		modules.add(new JAXBModule(config));
+		modules.add(new IntrospectiveModule(config));
 		modules.add(new Log4JModule(config, metrics));
 	}
 

@@ -37,7 +37,6 @@ public class CoreRestServicesModule extends AbstractModule
 		bind(LocalEndpointDiscovery.class).to(ServletEndpointDiscoveryImpl.class);
 
 		bind(GuiceRestCoreService.class).to(GuiceRestCoreServiceImpl.class).asEagerSingleton();
-
 		RestResourceRegistry.register(GuiceRestCoreService.class);
 		RestResourceRegistry.register(GuiceCommonRestResources.class);
 		RestResourceRegistry.register(RestServiceList.class);

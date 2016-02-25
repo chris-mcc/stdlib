@@ -12,8 +12,8 @@
 
 	<properties>
 		<guice.version>3.2.4</guice.version>
-		<metrics.version>3.0.1</metrics.version>
-		<resteasy.version>3.0.7.Final</resteasy.version>
+		<metrics.version>3.1.2</metrics.version>
+		<resteasy.version>3.0.10.Final</resteasy.version>
 		<javassist.version>3.18.2-GA</javassist.version>
 		<hibernate.version>4.3.7.Final</hibernate.version>
 		<dbunit.version>2.5.0</dbunit.version>
@@ -58,13 +58,13 @@
 		<dependency>
 			<groupId>org.apache.xbean</groupId>
 			<artifactId>xbean-finder</artifactId>
-			<version>4.1</version>
+			<version>4.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.ow2.asm</groupId>
 			<artifactId>asm-all</artifactId>
-			<version>5.0.3</version>
+			<version>5.0.4</version>
 		</dependency>
 
 	</dependencies>

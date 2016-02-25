@@ -92,13 +92,15 @@ public class WebappGuiceRole implements GuiceRole
 
 		final boolean hasIndexEndpoint = config.containsKey(GuiceProperties.INDEX_SERVICE_ENDPOINT);
 
-		if (hasIndexEndpoint && !indexServiceDisabled)
+		if (hasIndexEndpoint && indexServiceDisabled==false)
 		{
 			log.info("Enabling index service capabilities...");
 			modules.add(new IndexServiceModule());
 		}
 		else
+		{
 			log.info("Index service capabilities were not enabled");
+		}
 	}
 
 
