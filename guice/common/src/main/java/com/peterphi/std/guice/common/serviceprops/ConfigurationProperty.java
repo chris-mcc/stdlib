@@ -6,7 +6,9 @@ import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -44,6 +46,20 @@ public class ConfigurationProperty
 	public String getName()
 	{
 		return name;
+	}
+
+
+	public boolean isFrameworkProperty()
+	{
+		for (ConfigurationPropertyBindingSite site : bindings)
+		{
+			if (StringUtils.startsWith(site.getOwner().getPackage().getName(), "com.peterphi.std"))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 
@@ -94,7 +110,7 @@ public class ConfigurationProperty
 		}
 
 		// No description
-		return null;
+		return "";
 	}
 
 
@@ -146,10 +162,27 @@ public class ConfigurationProperty
 	}
 
 
+	public Set<Object> getBoundValues()
+	{
+		Set<Object> value = new HashSet<>();
+
+		for (ConfigurationPropertyBindingSite binding : bindings)
+			value.addAll(binding.get(registry.getInstances(binding.getOwner())));
+
+		return value;
+	}
+
+
 	public void validate(final String value)
 	{
 		// Validate the new value passes all the binding constraints
 		for (ConfigurationPropertyBindingSite binding : bindings)
 			binding.validate(value);
+	}
+
+
+	public String getValue()
+	{
+		return configuration.getString(name);
 	}
 }

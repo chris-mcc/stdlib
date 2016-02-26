@@ -1,5 +1,9 @@
 package com.peterphi.std.guice.hibernate.webquery.impl;
 
+import com.peterphi.std.guice.hibernate.webquery.impl.functions.QFunctionFactory;
+import com.peterphi.std.guice.restclient.jaxb.webquery.WQConstraint;
+import com.peterphi.std.guice.restclient.jaxb.webquery.WQConstraintLine;
+import com.peterphi.std.guice.restclient.jaxb.webquery.WQGroup;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
@@ -18,8 +22,8 @@ public class QCriteriaBuilder
 {
 	private final QEntity entity;
 
-	private final Map<String, QJoin> joins = new HashMap<>();
-	private final List<QConstraints> constraints = new ArrayList<>();
+	private final Map<QPath, QJoin> joins = new HashMap<>();
+	private final List<QFunction> constraints = new ArrayList<>();
 	private final List<QOrder> order = new ArrayList<>();
 
 	private final List<String> discriminators = new ArrayList<>();
@@ -34,34 +38,71 @@ public class QCriteriaBuilder
 	}
 
 
-	public void addAll(Map<String, List<String>> parameters)
+	public QCriteriaBuilder limit(int limit)
 	{
-		for (Map.Entry<String, List<String>> entry : parameters.entrySet())
-		{
-			final String key = entry.getKey();
+		this.limit = limit;
 
-			if (key.charAt(0) == '_')
-			{
-				if (key.equals("_offset"))
-					offset = Integer.parseInt(entry.getValue().get(0));
-				else if (key.equals("_limit"))
-					limit = Integer.parseInt(entry.getValue().get(0));
-				else if (key.equals("_order"))
-					addOrder(entry.getValue());
-				else if (key.equals("_class"))
-					addClass(entry.getValue());
-				else
-					throw new IllegalArgumentException("Unknown built-in name: " + key);
-			}
+		return this;
+	}
+
+
+	public QCriteriaBuilder offset(int offset)
+	{
+		this.offset = offset;
+
+		return this;
+	}
+
+
+	public void addConstraints(final List<WQConstraintLine> constraints)
+	{
+		this.constraints.addAll(parseConstraint(constraints));
+	}
+
+
+	private List<QFunction> parseConstraint(List<WQConstraintLine> constraints)
+	{
+		List<QFunction> list = new ArrayList<>(constraints.size());
+
+		for (WQConstraintLine line : constraints)
+		{
+			if (line instanceof WQConstraint)
+				list.add(parseConstraint((WQConstraint) line));
 			else
-			{
-				addConstraint(key, entry.getValue());
-			}
+				list.add(parseConstraint((WQGroup) line));
+		}
+
+		return list;
+	}
+
+
+	private QFunction parseConstraint(WQConstraint constraint)
+	{
+		return QFunctionFactory.getInstance(getProperty(constraint.field),
+		                                    constraint.function,
+		                                    constraint.value,
+		                                    constraint.value2,
+		                                    this :: getProperty);
+	}
+
+
+	private QFunction parseConstraint(WQGroup group)
+	{
+		List<QFunction> contents = parseConstraint(group.constraints);
+
+		switch (group.operator)
+		{
+			case AND:
+				return QFunctionFactory.and(contents);
+			case OR:
+				return QFunctionFactory.or(contents);
+			default:
+				throw new IllegalArgumentException("Unknown group operator: " + group.operator);
 		}
 	}
 
 
-	private void addClass(final List<String> values)
+	public void addClass(final List<String> values)
 	{
 		this.discriminators.addAll(values);
 	}
@@ -74,14 +115,13 @@ public class QCriteriaBuilder
 	 * @param criteria
 	 * 		the base criteria to use
 	 */
-	public void append(Criteria criteria)
+	public void appendTo(Criteria criteria)
 	{
-		append(criteria, true, true);
+		appendTo(criteria, true, true);
 	}
 
 
 	/**
-	 *
 	 * @param criteria
 	 * 		the base criteria to use
 	 * @param includeConstraints
@@ -89,7 +129,7 @@ public class QCriteriaBuilder
 	 * @param includePagination
 	 * 		if true, LIMIT and OFFSET will be set in the query
 	 */
-	public void append(Criteria criteria, boolean includeConstraints, boolean includePagination)
+	public void appendTo(Criteria criteria, boolean includeConstraints, boolean includePagination)
 	{
 		appendJoins(criteria);
 
@@ -98,7 +138,7 @@ public class QCriteriaBuilder
 		if (includeConstraints)
 		{
 			// Add the constraints
-			for (QConstraints constraint : constraints)
+			for (QFunction constraint : constraints)
 				criteria.add(constraint.encode());
 		}
 
@@ -141,7 +181,7 @@ public class QCriteriaBuilder
 	{
 		// Set up the joins
 		for (QJoin join : joins.values())
-			criteria.createAlias(join.getPath(), join.getAlias(), JoinType.LEFT_OUTER_JOIN);
+			criteria.createAlias(join.getPath().toString(), join.getAlias(), JoinType.LEFT_OUTER_JOIN);
 	}
 
 
@@ -191,71 +231,25 @@ public class QCriteriaBuilder
 	}
 
 
-	public void addOrder(List<String> orderings)
+	public QCriteriaBuilder addOrder(QPropertyRef property, boolean asc)
 	{
-		for (String ordering : orderings)
-			addOrder(ordering);
+		if (asc)
+			order.add(new QOrder(property, true));
+		else
+			order.add(new QOrder(property, false));
+
+		return this;
 	}
 
 
-	public void addOrder(String ordering)
-	{
-		if (ordering.indexOf(' ') != -1)
-		{
-			final String[] pathAndOrder = ordering.split(" ", 2);
-
-			final String sortPath = pathAndOrder[0];
-			final String direction = pathAndOrder[1];
-
-			final QPropertyRef property = getProperty(sortPath);
-
-			if (direction.equalsIgnoreCase("asc"))
-			{
-				order.add(new QOrder(property, true));
-				return;
-			}
-			else if (direction.equalsIgnoreCase("desc"))
-			{
-				order.add(new QOrder(property, false));
-				return;
-			}
-		}
-
-		throw new IllegalArgumentException("Order expected [property] [asc|desc], but got: " + ordering);
-	}
-
-
-	public void addConstraint(String path, List<String> filters)
-	{
-		final QPropertyRef ref = getProperty(path);
-
-		constraints.add(new QConstraints(ref, filters));
-	}
-
-
-	protected QPropertyRef getProperty(String path)
+	public QPropertyRef getProperty(String path)
 	{
 		try
 		{
-			final int index = path.lastIndexOf('.');
+			QPropertyPath propertyPath = entity.getPath(path).getPropertyPath();
 
-			final QJoin join;
-			final QProperty property;
-			if (index != -1)
-			{
-				// Dotted path
-				final String parent = path.substring(0, index);
-				final String name = path.substring(index + 1);
-
-				join = join(parent);
-				property = join.getEntity().getProperty(name);
-			}
-			else
-			{
-				// Non-dotted path
-				join = null;
-				property = entity.getProperty(path);
-			}
+			final QJoin join = join(propertyPath.getPath());
+			final QProperty property = propertyPath.getProperty();
 
 			return new QPropertyRef(join, property);
 		}
@@ -266,43 +260,36 @@ public class QCriteriaBuilder
 	}
 
 
-	public QJoin join(String path)
+	public QJoin join(QPath path)
 	{
+		if (path == null)
+			return null;
+
+		final QJoin parent;
+
 		if (joins.containsKey(path))
-			return joins.get(path);
-
-		// If this is a dotted path, join to the LHS (which is the parent entity for this join) and store the RHS in name
-		// If this is not a dotted path, we are the parent entity for this join (and leave the path untouched)
-		final QEntity parent;
-		final String name;
 		{
-			final int index = path.lastIndexOf('.');
-
-			if (index != -1)
-			{
-				final String parentPath = path.substring(0, index);
-				name = path.substring(index + 1);
-
-				parent = join(parentPath).getEntity();
-			}
-			else
-			{
-				name = path; // no dots in path
-				parent = entity;
-			}
+			return joins.get(path);
+		}
+		else
+		{
+			parent = join(path.getParent());
 		}
 
-		final QRelation relation = parent.getRelation(name);
+		final QJoin join = new QJoin(path,
+		                             path.toJoinAlias(),
+		                             parent != null ? parent.getEntity() : path.getRelation(0).getEntity());
 
-		final String alias = pathToJoinAlias(path);
-		joins.put(path, new QJoin(path, alias, relation.getEntity()));
+		joins.put(path, join);
 
-		return joins.get(path);
+		return join;
 	}
 
 
-	private static String pathToJoinAlias(final String path)
+	public QJoin join(String path)
 	{
-		return path.replace('.', '_');
+		final QPropertyPathBuilder builder = entity.getPath(path);
+
+		return join(builder.getPath());
 	}
 }

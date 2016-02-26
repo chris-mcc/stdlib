@@ -7,21 +7,21 @@ import com.google.inject.name.Named;
 import com.peterphi.std.guice.apploader.GuiceProperties;
 import com.peterphi.std.guice.serviceregistry.LocalEndpointDiscovery;
 import com.peterphi.std.guice.serviceregistry.rest.RestResourceRegistry;
+import com.peterphi.std.guice.web.rest.service.GuiceCoreServicesRegistry;
+import com.peterphi.std.guice.web.rest.service.daemons.GuiceRestDaemonsService;
+import com.peterphi.std.guice.web.rest.service.logging.GuiceRestLoggingService;
 import com.peterphi.std.guice.web.rest.service.restcore.GuiceCommonRestResources;
 import com.peterphi.std.guice.web.rest.service.restcore.GuiceRestCoreService;
 import com.peterphi.std.guice.web.rest.service.restcore.GuiceRestCoreServiceImpl;
 import com.peterphi.std.guice.web.rest.service.servicedescription.RestConfigList;
 import com.peterphi.std.guice.web.rest.service.servicedescription.RestServiceList;
-import com.peterphi.std.guice.web.rest.templating.freemarker.FreemarkerModule;
-import org.apache.log4j.Logger;
+import com.peterphi.std.guice.web.rest.templating.thymeleaf.ThymeleafModule;
 
 import javax.servlet.ServletContext;
 import java.net.URI;
 
 public class CoreRestServicesModule extends AbstractModule
 {
-	private static final Logger log = Logger.getLogger(CoreRestServicesModule.class);
-
 	/**
 	 * Servlet context value to read for the resteasy prefix
 	 */
@@ -31,9 +31,9 @@ public class CoreRestServicesModule extends AbstractModule
 	@Override
 	protected void configure()
 	{
-		// Make freemarker available for REST List service
-		install(new FreemarkerModule());
+		install(new ThymeleafModule());
 
+		bind(GuiceCoreServicesRegistry.class).asEagerSingleton();
 		bind(LocalEndpointDiscovery.class).to(ServletEndpointDiscoveryImpl.class);
 
 		bind(GuiceRestCoreService.class).to(GuiceRestCoreServiceImpl.class).asEagerSingleton();
@@ -41,6 +41,8 @@ public class CoreRestServicesModule extends AbstractModule
 		RestResourceRegistry.register(GuiceCommonRestResources.class);
 		RestResourceRegistry.register(RestServiceList.class);
 		RestResourceRegistry.register(RestConfigList.class);
+		RestResourceRegistry.register(GuiceRestDaemonsService.class);
+		RestResourceRegistry.register(GuiceRestLoggingService.class);
 	}
 
 

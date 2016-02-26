@@ -3,7 +3,6 @@ package com.peterphi.std.util.jaxb;
 import com.peterphi.std.util.DOMUtils;
 import com.peterphi.std.util.jaxb.exception.JAXBRuntimeException;
 import org.apache.log4j.Logger;
-import org.eclipse.persistence.jaxb.JAXBContextFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -12,6 +11,12 @@ import javax.xml.bind.*;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
+import javax.xml.bind.Unmarshaller;
+
 import javax.xml.validation.Schema;
 import java.io.*;
 import java.util.Arrays;
@@ -29,6 +34,11 @@ public class JAXBSerialiser
 	private final JAXBContext context;
 	private Schema schema;
 	private boolean prettyOutput = false;
+
+	private String encoding = "UTF-8";
+	private String schemaLocation;
+	private String noNamespaceSchemaLocation;
+	private boolean fragment = false;
 
 
 	/**
@@ -92,6 +102,10 @@ public class JAXBSerialiser
 
 	/**
 	 * Optionally specify the schema to use for all future serialisation/deserialisation methods
+	 * <p>
+	 * Note that if this serializer is returned from and cached by a {@link com.peterphi.std.util.jaxb.JAXBSerialiserFactory
+	 * JAXBSerialiserFactory} then use of this method could result in unintended side effects for other classes sharing the
+	 * JAXBSerialiserFactory
 	 *
 	 * @param schema
 	 *
@@ -120,6 +134,84 @@ public class JAXBSerialiser
 	}
 
 
+	/**
+	 * Specify an output encoding to use when marshalling the XML data. The default is UTF-8
+	 * <p>
+	 * Note that if this serializer is returned from and cached by a {@link com.peterphi.std.util.jaxb.JAXBSerialiserFactory
+	 * JAXBSerialiserFactory} then use of this method could result in unintended side effects for other classes sharing the
+	 * JAXBSerialiserFactory
+	 *
+	 * @param encoding
+	 *
+	 * @return this for method chaining
+	 */
+	public JAXBSerialiser setEncoding(final String encoding)
+	{
+		this.encoding = encoding;
+
+		return this;
+	}
+
+
+	/**
+	 * Specify an xsi:schemaLocation attribute in the generated XML
+	 * <p>
+	 * Note that if this serializer is returned from and cached by a {@link com.peterphi.std.util.jaxb.JAXBSerialiserFactory
+	 * JAXBSerialiserFactory} then use of this method could result in unintended side effects for other classes sharing the
+	 * JAXBSerialiserFactory
+	 *
+	 * @param schemaLocation
+	 *
+	 * @return this for method chaining
+	 */
+	public JAXBSerialiser setSchemaLocation(final String schemaLocation)
+	{
+		this.schemaLocation = schemaLocation;
+
+		return this;
+	}
+
+
+	/**
+	 * Specify an xsi:noNamespaceSchemaLocation in the generated XML
+	 * <p>
+	 * Note that if this serializer is returned from and cached by a {@link com.peterphi.std.util.jaxb.JAXBSerialiserFactory
+	 * JAXBSerialiserFactory} then use of this method could result in unintended side effects for other classes sharing the
+	 * JAXBSerialiserFactory
+	 *
+	 * @param noNamespaceSchemaLocation
+	 *
+	 * @return this for method chaining
+	 */
+	public JAXBSerialiser setNoNamespaceSchemaLocation(final String noNamespaceSchemaLocation)
+	{
+		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
+
+		return this;
+	}
+
+
+	/**
+	 * Specify the value of jaxb.fragment used by the underlying marshaller
+	 * <p>
+	 * Note that if this serializer is returned from and cached by a {@link com.peterphi.std.util.jaxb.JAXBSerialiserFactory
+	 * JAXBSerialiserFactory} then use of this method could result in unintended side effects for other classes sharing the
+	 * JAXBSerialiserFactory
+	 *
+	 * @param fragment
+	 *
+	 * @return this for method chaining
+	 *
+	 * @see javax.xml.bind.Marshaller
+	 */
+	public JAXBSerialiser setFragment(final boolean fragment)
+	{
+		this.fragment = fragment;
+
+		return this;
+	}
+
+
 	private Marshaller getMarshaller()
 	{
 		try
@@ -128,16 +220,42 @@ public class JAXBSerialiser
 
 			jaxb.setSchema(schema);
 
-			if (prettyOutput)
-			{
-				jaxb.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			}
+			setJaxbProperties(jaxb);
 
 			return jaxb;
 		}
 		catch (JAXBException e)
 		{
 			throw new JAXBRuntimeException("Error creating marshaller", e);
+		}
+	}
+
+
+	private void setJaxbProperties(final Marshaller jaxb) throws PropertyException
+	{
+		if (prettyOutput)
+		{
+			jaxb.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		}
+
+		if (encoding != null)
+		{
+			jaxb.setProperty(Marshaller.JAXB_ENCODING, encoding);
+		}
+
+		if (schemaLocation != null)
+		{
+			jaxb.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
+		}
+
+		if (noNamespaceSchemaLocation != null)
+		{
+			jaxb.setProperty(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, noNamespaceSchemaLocation);
+		}
+
+		if (fragment)
+		{
+			jaxb.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 		}
 	}
 
@@ -578,7 +696,7 @@ public class JAXBSerialiser
 
 		try
 		{
-			JAXBContext ctx = JAXBContextFactory.createContext(contextPath, Thread.currentThread().getContextClassLoader());
+			JAXBContext ctx = org.eclipse.persistence.jaxb.JAXBContext.newInstance(contextPath);
 
 			return getInstance(ctx);
 		}
@@ -603,7 +721,7 @@ public class JAXBSerialiser
 
 		try
 		{
-			JAXBContext ctx = JAXBContextFactory.createContext(classes, null);
+			JAXBContext ctx = org.eclipse.persistence.jaxb.JAXBContext.newInstance(classes);
 
 			return getInstance(ctx);
 		}

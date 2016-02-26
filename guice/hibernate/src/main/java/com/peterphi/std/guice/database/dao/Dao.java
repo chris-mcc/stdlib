@@ -1,8 +1,7 @@
 package com.peterphi.std.guice.database.dao;
 
 import com.peterphi.std.guice.hibernate.webquery.ConstrainedResultSet;
-import com.peterphi.std.guice.hibernate.webquery.ResultSetConstraint;
-import org.hibernate.Criteria;
+import com.peterphi.std.guice.restclient.jaxb.webquery.WebQuery;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -33,19 +32,7 @@ public interface Dao<T, ID extends Serializable>
 	 *
 	 * @return a resultset containing the requested number of results
 	 */
-	public ConstrainedResultSet<T> findByUriQuery(ResultSetConstraint constraints);
-
-	/**
-	 * Execute a Dynamic query using the specified constraints, returning the result as a ConstrainedResultSet
-	 *
-	 * @param constraints
-	 * 		the constraints to apply
-	 * @param base
-	 * 		the base criteria to use (the constraints will be ANDed with this Criteria
-	 *
-	 * @return a resultset containing the requested number of results
-	 */
-	public ConstrainedResultSet<T> findByUriQuery(ResultSetConstraint constraints, Criteria base);
+	ConstrainedResultSet<T> findByUriQuery(WebQuery constraints);
 
 	/**
 	 * Retrieve every object accessible through this DAO
@@ -53,18 +40,6 @@ public interface Dao<T, ID extends Serializable>
 	 * @return all entities of this type in the database
 	 */
 	public List<T> getAll();
-
-	/**
-	 * Retrieve a page from the list of every object accessible through this DAO
-	 *
-	 * @param offset
-	 * 		the first result to return
-	 * @param limit
-	 * 		the maximum number of results (the "page size")
-	 *
-	 * @return
-	 */
-	public List<T> getAll(int offset, int limit);
 
 	/**
 	 * Retrieve an item by its primary key
@@ -145,9 +120,11 @@ public interface Dao<T, ID extends Serializable>
 	 * @param obj
 	 * 		the entity
 	 *
+	 * @return a Hibernate entity version of obj
+	 *
 	 * @see org.hibernate.Session#merge(Object)
 	 */
-	public void merge(T obj);
+	public T merge(T obj);
 
 
 	/**
@@ -160,7 +137,7 @@ public interface Dao<T, ID extends Serializable>
 	 *
 	 * @return the entity, or null if no results were found
 	 *
-	 * @throws HibernateException
+	 * @throws org.hibernate.HibernateException
 	 * 		if more than one property is returned
 	 */
 	public T getByUniqueProperty(String propertyName, Object value);

@@ -6,14 +6,20 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Named;
-import com.peterphi.std.annotation.Doc;
 import com.peterphi.std.guice.apploader.GuiceProperties;
 import com.peterphi.std.guice.common.introspective.type.DatabaseIntrospectiveInfo;
 import com.peterphi.std.guice.common.serviceprops.ConfigurationConverter;
 import com.peterphi.std.guice.database.annotation.Transactional;
 import com.peterphi.std.guice.hibernate.introspective.HibernateIntrospectiveInfoRetriever;
 import com.peterphi.std.guice.hibernate.usertype.*;
+import com.peterphi.std.guice.hibernate.module.ext.HibernateConfigurationValidator;
+import com.peterphi.std.guice.hibernate.usertype.DateUserType;
+import com.peterphi.std.guice.hibernate.usertype.JodaDateTimeUserType;
+import com.peterphi.std.guice.hibernate.usertype.JodaLocalDateUserType;
+import com.peterphi.std.guice.hibernate.usertype.SampleCountUserType;
+import com.peterphi.std.guice.hibernate.usertype.TimecodeUserType;
 import com.peterphi.std.io.PropertyFile;
+import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -21,10 +27,17 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.usertype.UserType;
 
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
 public abstract class HibernateModule extends AbstractModule
 {
+	private static final Logger log = Logger.getLogger(HibernateModule.class);
+
+	/**
+	 * If hibernate.properties is set to this value, hibernate properties are assumed to be embedded in app config
+	 */
 	private static final String PROPFILE_VAL_EMBEDDED = "embedded";
 
 
@@ -56,7 +69,6 @@ public abstract class HibernateModule extends AbstractModule
 	@Provides
 	@Singleton
 	public Configuration getHibernateConfiguration(org.apache.commons.configuration.Configuration configuration,
-	                                               @Doc("the source for hibernate.properties (either embedded or a filepath to search for using the classpath)")
 	                                               @Named(GuiceProperties.HIBERNATE_PROPERTIES) String propertyFileName)
 	{
 		final Properties properties;
@@ -80,6 +92,8 @@ public abstract class HibernateModule extends AbstractModule
 			}
 		}
 
+		validateHibernateProperties(configuration, properties);
+
 		org.hibernate.cfg.Configuration config = new org.hibernate.cfg.Configuration();
 		config.addProperties(properties);
 
@@ -87,7 +101,60 @@ public abstract class HibernateModule extends AbstractModule
 
 		registerTypes(config);
 
+		{
+			ServiceLoader<HibernateConfigurationValidator> services = ServiceLoader.load(HibernateConfigurationValidator.class);
+
+			final Iterator<HibernateConfigurationValidator> it = services.iterator();
+
+			if (log.isTraceEnabled())
+				log.trace("Evaluate HibernateConfigurationValidators. has at least one=" + it.hasNext());
+
+			while (it.hasNext())
+			{
+				final HibernateConfigurationValidator validator = it.next();
+
+				if (log.isTraceEnabled())
+					log.trace("Validating hibernate configuration with " + validator);
+
+				// Have the validator check the hibernate/database configuration
+				validator.validate(config, properties, configuration);
+			}
+		}
+
 		return config;
+	}
+
+
+	/**
+	 * Checks whether hbm2ddl is set to a prohibited value, throwing an exception if it is
+	 *
+	 * @param configuration
+	 * 		the global app config
+	 * @param hibernateProperties
+	 * 		the hibernate-specific config
+	 *
+	 * @throws IllegalArgumentException
+	 * 		if the hibernate.hbm2ddl.auto property is set to a prohibited value
+	 */
+	private void validateHibernateProperties(final org.apache.commons.configuration.Configuration configuration,
+	                                         final Properties hibernateProperties)
+	{
+		final boolean allowCreateSchema = configuration.getBoolean(GuiceProperties.HIBERNATE_ALLOW_HBM2DDL_CREATE, false);
+
+		if (!allowCreateSchema)
+		{
+			// Check that hbm2ddl is not set to a prohibited value, throwing an exception if it is
+			final String hbm2ddl = hibernateProperties.getProperty("hibernate.hbm2ddl.auto");
+
+			if (hbm2ddl != null && (hbm2ddl.equalsIgnoreCase("create") || hbm2ddl.equalsIgnoreCase("create-drop")))
+			{
+				throw new IllegalArgumentException("Value '" +
+				                                   hbm2ddl +
+				                                   "' is not permitted for hibernate property 'hibernate.hbm2ddl.auto' under the current configuration, consider using 'update' instead. If you must use the value 'create' then set configuration parameter '" +
+				                                   GuiceProperties.HIBERNATE_ALLOW_HBM2DDL_CREATE +
+				                                   "' to 'true'");
+			}
+		}
 	}
 
 

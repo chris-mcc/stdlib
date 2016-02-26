@@ -5,7 +5,7 @@
 
 	<groupId>com.peterphi.std.guice</groupId>
 	<artifactId>stdlib-guice-restclient</artifactId>
-	<version>7.7.1-SNAPSHOT</version>
+	<version>8.6.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>stdlib guice rest client</name>
@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>com.peterphi.std.guice</groupId>
 		<artifactId>stdlib-guice-parent</artifactId>
-		<version>7.7.1-SNAPSHOT</version>
+		<version>8.6.3-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -58,15 +58,22 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jettison-provider</artifactId>
+			<version>${resteasy.version}</version>
+		</dependency>
+
+
+		<dependency>
 			<groupId>commons-discovery</groupId>
 			<artifactId>commons-discovery</artifactId>
-			<version>0.2</version>
+			<version>0.5</version>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
-			<version>1.0.4</version>
+			<version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>xml-apis</groupId>
