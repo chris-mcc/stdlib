@@ -13,15 +13,18 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.NoConnectionReuseStrategy;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.log4j.Logger;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
+import java.net.ProxySelector;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -128,7 +131,34 @@ public class ResteasyClientFactoryImpl implements StoppableService
 	                                        final AuthScope authScope,
 	                                        final Credentials credentials,
 	                                        final boolean preemptiveAuth,
+	                                        final boolean storeCookies,
 	                                        Consumer<HttpClientBuilder> customiser)
+	{
+		customiser = createHttpClientCustomiser(fastFail, authScope, credentials, preemptiveAuth, storeCookies, customiser);
+
+
+		return getOrCreateClient(customiser, null);
+	}
+
+
+	/**
+	 * N.B. This method signature may change in the future to add new parameters
+	 *
+	 * @param fastFail
+	 * @param authScope
+	 * @param credentials
+	 * @param preemptiveAuth
+	 * @param storeCookies
+	 * @param customiser
+	 *
+	 * @return
+	 */
+	public Consumer<HttpClientBuilder> createHttpClientCustomiser(final boolean fastFail,
+	                                                              final AuthScope authScope,
+	                                                              final Credentials credentials,
+	                                                              final boolean preemptiveAuth,
+	                                                              final boolean storeCookies,
+	                                                              Consumer<HttpClientBuilder> customiser)
 	{
 		// Customise timeouts if fast fail mode is enabled
 		if (fastFail)
@@ -160,14 +190,16 @@ public class ResteasyClientFactoryImpl implements StoppableService
 				customiser = concat(customiser, b -> b.addInterceptorLast(new PreemptiveBasicAuthInterceptor()));
 		}
 
-		return getOrCreateClient(customiser, null);
+		// If cookies are enabled then set up a cookie store
+		if (storeCookies)
+			customiser = concat(customiser, b -> b.setDefaultCookieStore(new BasicCookieStore()));
+		return customiser;
 	}
 
 
 	private ResteasyClient getOrCreateClient(Consumer<HttpClientBuilder> httpCustomiser,
 	                                         Consumer<ResteasyClientBuilder> resteasyCustomiser)
 	{
-		RequestConfig.Builder requestBuilder;
 		if (httpCustomiser == null && resteasyCustomiser == null)
 		{
 			// Recursively call self to create a shared client for other non-customised consumers
@@ -182,36 +214,7 @@ public class ResteasyClientFactoryImpl implements StoppableService
 		}
 		else
 		{
-			// Build an HttpClient
-			final CloseableHttpClient http;
-			{
-				final HttpClientBuilder builder = HttpClientBuilder.create();
-
-				// By default set long call timeouts
-				{
-					requestBuilder = RequestConfig.custom();
-
-					requestBuilder.setConnectTimeout((int) connectionTimeout.getMilliseconds())
-					              .setSocketTimeout((int) socketTimeout.getMilliseconds())
-							      .setConnectionRequestTimeout((int)connectionRequestTimeout.getMilliseconds());
-
-					builder.setDefaultRequestConfig(requestBuilder.build());
-				}
-
-				// Set the default keepalive setting
-				if (noKeepalive)
-					builder.setConnectionReuseStrategy(new NoConnectionReuseStrategy());
-
-				// By default share the common connection provider
-				builder.setConnectionManager(connectionManager);
-
-				// Allow customisation
-				if (httpCustomiser != null)
-					httpCustomiser.accept(builder);
-
-				http = builder.build();
-			}
-
+			final CloseableHttpClient http = createHttpClient(httpCustomiser);
 			// Now build a resteasy client
 			{
 				ResteasyClientBuilder builder = new ResteasyClientBuilder();
@@ -224,6 +227,45 @@ public class ResteasyClientFactoryImpl implements StoppableService
 				return builder.build();
 			}
 		}
+	}
+
+
+	/**
+	 * Build an HttpClient
+	 *
+	 * @param customiser
+	 *
+	 * @return
+	 */
+	public CloseableHttpClient createHttpClient(final Consumer<HttpClientBuilder> customiser)
+	{
+		final HttpClientBuilder builder = HttpClientBuilder.create();
+
+		// By default set long call timeouts
+		{
+			RequestConfig.Builder requestBuilder = RequestConfig.custom();
+
+			requestBuilder.setConnectTimeout((int) connectionTimeout.getMilliseconds())
+			              .setSocketTimeout((int) socketTimeout.getMilliseconds());
+
+			builder.setDefaultRequestConfig(requestBuilder.build());
+		}
+
+		// Set the default keepalive setting
+		if (noKeepalive)
+			builder.setConnectionReuseStrategy(new NoConnectionReuseStrategy());
+
+		// By default share the common connection provider
+		builder.setConnectionManager(connectionManager);
+
+		// By default use the JRE default route planner for proxies
+		builder.setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()));
+
+		// Allow customisation
+		if (customiser != null)
+			customiser.accept(builder);
+
+		return builder.build();
 	}
 
 

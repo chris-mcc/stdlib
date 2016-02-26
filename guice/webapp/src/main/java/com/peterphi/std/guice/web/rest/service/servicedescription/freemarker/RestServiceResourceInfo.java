@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Helper type to provide
@@ -65,6 +67,12 @@ public class RestServiceResourceInfo implements Comparable<RestServiceResourceIn
 	}
 
 
+	public boolean isPlainGet()
+	{
+		return getHttpMethod().equalsIgnoreCase("GET") && !getPath().contains("{");
+	}
+
+
 	public String getMethodString()
 	{
 		return method.toGenericString();
@@ -103,12 +111,10 @@ public class RestServiceResourceInfo implements Comparable<RestServiceResourceIn
 	@Override
 	public int compareTo(final RestServiceResourceInfo that)
 	{
-		return ComparisonChain.start()
-		                      .compare(this.getLocalPath(), that.getLocalPath())
-		                      .compare(this.getHttpMethod(),
-		                               that.getHttpMethod())
-		                      .compare(this.method.getParameterTypes().length, that.method.getParameterTypes().length)
-		                      .result();
+		return ComparisonChain.start().compare(this.getLocalPath(), that.getLocalPath()).compare(this.getHttpMethod(),
+		                                                                                         that.getHttpMethod()).compare(
+				this.method.getParameterTypes().length,
+				that.method.getParameterTypes().length).result();
 	}
 
 
@@ -118,7 +124,7 @@ public class RestServiceResourceInfo implements Comparable<RestServiceResourceIn
 	}
 
 
-	private static String concat(String a, String b)
+	static String concat(String a, String b)
 	{
 		// Strip trailing slashes from a
 		while (!a.isEmpty() && a.charAt(a.length() - 1) == '/')
@@ -158,7 +164,7 @@ public class RestServiceResourceInfo implements Comparable<RestServiceResourceIn
 	{
 		Consumes consumes = method.getAnnotation(Consumes.class);
 
-		if(consumes == null)
+		if (consumes == null)
 			consumes = method.getDeclaringClass().getAnnotation(Consumes.class);
 
 		if (consumes == null || consumes.value() == null || consumes.value().length == 0)
@@ -172,7 +178,7 @@ public class RestServiceResourceInfo implements Comparable<RestServiceResourceIn
 	{
 		Produces produces = method.getAnnotation(Produces.class);
 
-		if(produces == null)
+		if (produces == null)
 			produces = method.getDeclaringClass().getAnnotation(Produces.class);
 
 		if (produces == null || produces.value() == null || produces.value().length == 0)
@@ -207,5 +213,75 @@ public class RestServiceResourceInfo implements Comparable<RestServiceResourceIn
 		{
 			return Collections.emptyList();
 		}
+	}
+
+
+	public String getCurlTemplate(String url)
+	{
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("curl");
+
+		if (!getHttpMethod().equals("GET"))
+			sb.append(" -X ").append(getHttpMethod());
+
+		// Try to add an Accept: header
+		{
+			Produces produces = method.getAnnotation(Produces.class);
+
+			if (produces == null)
+				produces = method.getDeclaringClass().getAnnotation(Produces.class);
+
+			if (produces == null || produces.value() == null || produces.value().length == 0)
+				sb.append(""); // don't add an Accept header
+			else
+				sb.append(" -H \"Accept: " + produces.value()[0] + "\"");
+		}
+
+		// Add the URL
+		sb.append(" \"").append(url).append('"');
+
+		// Add Content-Type and binary for POST/PUT
+		if (getHttpMethod().equals("POST") || getHttpMethod().equals("PUT"))
+		{
+			if (getConsumes().contains("application/xml"))
+				sb.append(" -H \"Content-Type: application/xml\" --data-binary \"@file.xml\"");
+			else if (getConsumes().contains("application/json"))
+				sb.append(" -H \"Content-Type: application/json\" --data-binary \"@file.json\"");
+			else if (getConsumes().contains("text/plain"))
+				sb.append(" -H \"Content-Type: text/plain\" --data-binary \"").append(getExampleTextPlain()).append('"');
+			else if (getRequestEntity() != null)
+				sb.append(" -H \"Content-Type: " + getConsumes() + "\" --data-binary \"...\"");
+		}
+
+		return sb.toString();
+	}
+
+
+	private String getExampleTextPlain()
+	{
+		if (getRequestEntity() == null || getRequestEntity().getDataType() == null)
+			return "???";
+
+		final Class<?> clazz = getRequestEntity().getDataType();
+
+		return getExampleTextPlain(clazz);
+	}
+
+
+	private static String getExampleTextPlain(final Class<?> clazz)
+	{
+		if (clazz.equals(Boolean.class) || clazz.equals(Boolean.TYPE))
+			return "true";
+		else if (clazz.equals(Integer.class) || clazz.equals(Integer.TYPE) ||
+		         clazz.equals(Long.class) || clazz.equals(Long.TYPE) ||
+		         clazz.equals(Short.class) || clazz.equals(Short.TYPE) ||
+		         clazz.equals(Float.class) || clazz.equals(Float.TYPE) ||
+		         clazz.equals(Double.class) || clazz.equals(Double.TYPE))
+			return "123";
+		else if (clazz.isEnum())
+			return Stream.of(clazz.getEnumConstants()).map(Object:: toString).collect(Collectors.joining("|"));
+		else
+			return "...";
 	}
 }

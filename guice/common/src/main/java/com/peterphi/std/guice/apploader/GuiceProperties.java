@@ -78,11 +78,17 @@ public class GuiceProperties
 	@Doc("If true then AuthConstraints will be ignored. Can only be enabled if framework.webauth.enabled=false (default false)")
 	public static final String AUTH_BYPASS = "framework.webauth.bypass";
 
+	@Doc("If true then the CharacterEncoding for HttpServletRequest (and InputParts for multipart/form-data resources) with no charset provided by the client will default to UTF-8 (default true)")
+	public static final java.lang.String HTTP_REQUESTS_DEFAULT_TO_UTF_8 = "framework.http-request.default-to-utf8";
+
 	//
 	// Guice Hibernate properties
 	//
 	@Doc("The source for hibernate.properties (either embedded or a filepath to search for using the classpath)")
 	public static final String HIBERNATE_PROPERTIES = "hibernate.properties";
+
+	@Doc("If true then hibernate configurations permitting the dropping and recreating of database tables will be allowed (default false)")
+	public static final String HIBERNATE_ALLOW_HBM2DDL_CREATE = "hibernate.allow-hbm2ddl-create";
 
 	@Doc("If true then when the guice hibernate jar is loaded it'll search for all @Entity annotated classes in the scan.packages packages and register them (default true)")
 	public static final String ROLE_HIBERNATE_AUTO = "role.hibernate.auto";
@@ -114,4 +120,22 @@ public class GuiceProperties
     //
     @Doc("The property suffix to the rest interface for the Index Services to use")
     public static final String INDEX_SERVICE_PROPERTIES_SUFFIX = ".index.service.property";
+
+	//
+	// Guice Liquibase module
+	//
+	@Doc("The liquibase action to execute, should be one of LiquibaseAction - IGNORE/ASSERT_UPDATED/UPDATE/MARK_UPDATED (default ASSERT_UPDATED)")
+	public static final java.lang.String LIQUIBASE_ACTION = "liquibase.action";
+
+	@Doc("The liquibase changelog file to use")
+	public static final java.lang.String LIQUIBASE_CHANGELOG = "liquibase.changelog";
+
+	@Doc("The liquibase contexts expression")
+	public static final String LIQUIBASE_CONTEXTS = "liquibase.contexts";
+
+	@Doc("The liquibase labels expression")
+	public static final String LIQUIBASE_LABELS = "liquibase.labels";
+
+	@Doc("The prefix property name for all liquibase parameters (this is not a real configurable property)")
+	public static final String LIQUIBASE_PARAMETER = "liquibase.parameter";
 }

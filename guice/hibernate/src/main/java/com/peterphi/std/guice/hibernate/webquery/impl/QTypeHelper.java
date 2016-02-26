@@ -1,13 +1,13 @@
 package com.peterphi.std.guice.hibernate.webquery.impl;
 
+import com.peterphi.std.guice.restclient.jaxb.webquery.WQDates;
+import com.peterphi.std.guice.restclient.jaxb.webqueryschema.WQDataType;
 import com.peterphi.std.types.SampleCount;
 import com.peterphi.std.types.Timecode;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -15,7 +15,69 @@ import java.util.UUID;
 
 class QTypeHelper
 {
-	private static final DateTimeFormatter ISO_FORMAT = ISODateTimeFormat.dateOptionalTimeParser();
+	public static WQDataType translate(Class<?> clazz)
+	{
+		if (clazz == String.class)
+		{
+			return WQDataType.STRING;
+		}
+		else if (clazz == Integer.class || clazz == int.class)
+		{
+			return WQDataType.NUMERIC;
+		}
+		else if (clazz == Long.class || clazz == long.class)
+		{
+			return WQDataType.NUMERIC;
+		}
+		else if (clazz == Double.class || clazz == double.class)
+		{
+			return WQDataType.NUMERIC;
+		}
+		else if (clazz == Short.class || clazz == short.class)
+		{
+			return WQDataType.NUMERIC;
+		}
+		else if (clazz == Boolean.class || clazz == boolean.class)
+		{
+			return WQDataType.BOOL;
+		}
+		else if (clazz == DateTime.class)
+		{
+			return WQDataType.DATETIME;
+		}
+		else if (clazz == Date.class)
+		{
+			return WQDataType.DATETIME;
+		}
+		else if (clazz == java.sql.Date.class)
+		{
+			return WQDataType.DATETIME;
+		}
+		else if (clazz == UUID.class)
+		{
+			return WQDataType.STRING;
+		}
+		else if (clazz == Timecode.class)
+		{
+			return WQDataType.TIMECODE;
+		}
+		else if (clazz == SampleCount.class)
+		{
+			return WQDataType.SAMPLE_COUNT;
+		}
+		else if (clazz.isEnum())
+		{
+			return WQDataType.ENUM;
+		}
+		else if (clazz.equals(byte[].class))
+		{
+			return WQDataType.BLOB;
+		}
+		else
+		{
+			throw new IllegalArgumentException("No primitives parser for type: " + clazz);
+		}
+	}
 
 
 	public static Object parse(Class<?> clazz, String value)
@@ -26,23 +88,39 @@ class QTypeHelper
 		}
 		else if (clazz == Integer.class || clazz == int.class)
 		{
-			// TODO implement -INF and INF ?
-			return Integer.parseInt(value);
+			if (value.equalsIgnoreCase("min"))
+				return Integer.MIN_VALUE;
+			else if (value.equalsIgnoreCase("max"))
+				return Integer.MAX_VALUE;
+			else
+				return Integer.parseInt(value);
 		}
 		else if (clazz == Long.class || clazz == long.class)
 		{
-			// TODO implement -INF and INF ?
-			return Long.parseLong(value);
+			if (value.equalsIgnoreCase("min"))
+				return Long.MIN_VALUE;
+			else if (value.equalsIgnoreCase("max"))
+				return Long.MAX_VALUE;
+			else
+				return Long.parseLong(value);
 		}
 		else if (clazz == Double.class || clazz == double.class)
 		{
-			// TODO implement -INF and INF ?
-			return Double.parseDouble(value);
+			if (value.equalsIgnoreCase("min"))
+				return Double.MIN_VALUE;
+			else if (value.equalsIgnoreCase("max"))
+				return Double.MAX_VALUE;
+			else
+				return Double.parseDouble(value);
 		}
 		else if (clazz == Short.class || clazz == short.class)
 		{
-			// TODO implement -INF and INF ?
-			return Short.parseShort(value);
+			if (value.equalsIgnoreCase("min"))
+				return Short.MIN_VALUE;
+			else if (value.equalsIgnoreCase("max"))
+				return Short.MAX_VALUE;
+			else
+				return Short.parseShort(value);
 		}
 		else if (clazz == Boolean.class || clazz == boolean.class)
 		{
@@ -57,15 +135,15 @@ class QTypeHelper
 		}
 		else if (clazz == DateTime.class)
 		{
-			return parseDate(value);
+			return WQDates.resolve(value);
 		}
 		else if (clazz == Date.class)
 		{
-			return parseDate(value).toDate();
+			return WQDates.resolve(value).toDate();
 		}
 		else if (clazz == java.sql.Date.class)
 		{
-			return new java.sql.Date(parseDate(value).getMillis());
+			return new java.sql.Date(WQDates.resolve(value).getMillis());
 		}
 		else if (clazz == UUID.class)
 		{
@@ -83,35 +161,13 @@ class QTypeHelper
 		{
 			return parseEnum(clazz, value);
 		}
+		else if (clazz.equals(byte[].class))
+		{
+			return value.getBytes(Charset.forName("UTF-8"));
+		}
 		else
 		{
 			throw new IllegalArgumentException("No primitives parser for type: " + clazz + ", cannot interpret " + value);
-		}
-	}
-
-
-	private static DateTime parseDate(String value)
-	{
-		// TODO implement -INF and INF ?
-		if (value.equalsIgnoreCase("now"))
-		{
-			return new DateTime();
-		}
-		else if (value.equalsIgnoreCase("today"))
-		{
-			return LocalDate.now().toDateTimeAtStartOfDay();
-		}
-		else if (value.equalsIgnoreCase("tomorrow"))
-		{
-			return LocalDate.now().plusDays(1).toDateTimeAtStartOfDay();
-		}
-		else if (value.equalsIgnoreCase("yesterday"))
-		{
-			return LocalDate.now().minusDays(1).toDateTimeAtStartOfDay();
-		}
-		else
-		{
-			return ISO_FORMAT.parseDateTime(value);
 		}
 	}
 

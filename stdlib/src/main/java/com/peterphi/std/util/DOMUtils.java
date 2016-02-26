@@ -1,10 +1,5 @@
-/***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
- * Performs utility XML operations Author: JMC Created: 10th April 2003
- **************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
-
 package com.peterphi.std.util;
 
-import com.peterphi.std.util.jaxb.exception.JAXBRuntimeException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -13,52 +8,42 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.*;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.ref.SoftReference;
 
 public class DOMUtils
 {
-	private static DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY;
-	private static XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
+	private static SoftReference<DocumentBuilderFactory> DOCUMENT_BUILDER_FACTORY = new SoftReference<>(null);
 
-	static
-	{
-		DOCUMENT_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-		DOCUMENT_BUILDER_FACTORY.setNamespaceAware(true);
-	}
 
 	private DOMUtils()
 	{
 	}
 
-	public static XMLStreamReader creatStreamReaderFromSource(Source source) {
-		try {
-			return XML_INPUT_FACTORY.createXMLStreamReader(source);
-		} catch (XMLStreamException e) {
-			throw new JAXBRuntimeException("Failed creating XML stream reader",e);
-		}
+
+	private static DocumentBuilderFactory createDocumentBuilderFactory()
+	{
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+		factory.setNamespaceAware(true);
+
+		return factory;
 	}
 
-	public static XMLStreamReader createStreamReaderFromReader(Reader reader) {
-		try {
-			return XML_INPUT_FACTORY.createXMLStreamReader(reader);
-		} catch (XMLStreamException e) {
-			throw new JAXBRuntimeException("Failed creating XML stream reader",e);
-		}
-	}
-
-	public static XMLStreamReader createStreamReaderFromReader(InputStream stream) {
-		try {
-			return XML_INPUT_FACTORY.createXMLStreamReader(stream);
-		} catch (XMLStreamException e) {
-			throw new JAXBRuntimeException("Failed creating XML stream reader",e);
-		}
-	}
 
 	/**
 	 * Create a new (namespace-aware) DocumentBuilder
@@ -69,7 +54,16 @@ public class DOMUtils
 	{
 		try
 		{
-			return DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
+			DocumentBuilderFactory factory = DOCUMENT_BUILDER_FACTORY.get();
+
+			if (factory == null)
+			{
+				factory = createDocumentBuilderFactory();
+
+				DOCUMENT_BUILDER_FACTORY = new SoftReference<>(factory);
+			}
+
+			return factory.newDocumentBuilder();
 		}
 		catch (ParserConfigurationException e)
 		{

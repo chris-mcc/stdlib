@@ -5,7 +5,7 @@
 
 	<groupId>com.peterphi.std.guice</groupId>
 	<artifactId>stdlib-guice-hibernate</artifactId>
-	<version>7.7.1-SNAPSHOT</version>
+	<version>8.6.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>stdlib guice hibernate</name>
@@ -14,13 +14,18 @@
 	<parent>
 		<groupId>com.peterphi.std.guice</groupId>
 		<artifactId>stdlib-guice-parent</artifactId>
-		<version>7.7.1-SNAPSHOT</version>
+		<version>8.6.3-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.peterphi.std.guice</groupId>
 			<artifactId>stdlib-guice-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.peterphi.std.guice</groupId>
+			<artifactId>stdlib-guice-restclient</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -32,7 +37,7 @@
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
-			<version>1.0.4</version>
+			<version>1.2</version>
 		</dependency>
 
 		<dependency>

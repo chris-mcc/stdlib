@@ -73,6 +73,16 @@ class GuicedResteasy implements GuiceApplication
 	@Named(GuiceProperties.SUPPRESS_CLIENT_ABORT_EXCEPTIONS)
 	boolean suppressClientAbortExceptions = true;
 
+	@Inject(optional = true)
+	@Named(GuiceProperties.HTTP_REQUESTS_DEFAULT_TO_UTF_8)
+	boolean forceUTF8DefaultCharset = true;
+
+	/**
+	 * Allow to be overridden but have a default implementation
+	 */
+	@Inject(optional = true)
+	DefaultHttpRequestCharsetHelper requestCharsetHelper = new DefaultHttpRequestCharsetHelper();
+
 
 	public GuicedResteasy(final GuiceRegistry registry,
 	                      final ServletConfig config,
@@ -139,6 +149,9 @@ class GuicedResteasy implements GuiceApplication
 	                 HttpServletResponse response) throws ServletException, IOException, NotFoundException
 	{
 		final HttpCallContext ctx = HttpCallContext.set(request, response, context);
+
+		if (forceUTF8DefaultCharset && requestCharsetHelper != null)
+			requestCharsetHelper.applyDefaultCharset(request);
 
 		Timer.Context timer = null;
 

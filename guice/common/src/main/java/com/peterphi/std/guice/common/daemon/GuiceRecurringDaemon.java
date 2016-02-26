@@ -5,8 +5,13 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.inject.Inject;
 import com.peterphi.std.guice.common.metrics.GuiceMetricNames;
+import com.peterphi.std.guice.common.stringparsing.StringToTypeConverter;
 import com.peterphi.std.threading.Timeout;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import java.time.Instant;
 
 public abstract class GuiceRecurringDaemon extends GuiceDaemon
 {
@@ -19,6 +24,13 @@ public abstract class GuiceRecurringDaemon extends GuiceDaemon
 	private Meter exceptions;
 
 	protected Timeout sleepTime;
+
+	private Instant lastRan = null;
+
+	/**
+	 * True while the user {@link #execute()} method is running
+	 */
+	private volatile boolean userCodeRunning = false;
 
 
 	/**
@@ -52,11 +64,60 @@ public abstract class GuiceRecurringDaemon extends GuiceDaemon
 	}
 
 
+	public boolean isUserCodeRunning()
+	{
+		return this.userCodeRunning;
+	}
+
+
+	@Inject
+	public void setSleepTimeFromConfigIfSet(Configuration config)
+	{
+		final String str = config.getString("daemon." + getName() + ".interval", null);
+
+		if (StringUtils.isNotEmpty(str))
+		{
+			final Timeout timeout = (Timeout) StringToTypeConverter.convert(Timeout.class, str);
+
+			if (timeout == null)
+				throw new IllegalArgumentException("Invalid interval config: " + str);
+			else
+				setSleepTime(timeout);
+		}
+	}
+
+
+	public Timeout getSleepTime()
+	{
+		return sleepTime;
+	}
+
+
+	public Timer getCalls()
+	{
+		return calls;
+	}
+
+
+	public Meter getExceptions()
+	{
+		return exceptions;
+	}
+
+
+	public void setSleepTime(final Timeout sleepTime)
+	{
+		this.sleepTime = sleepTime;
+	}
+
+
 	@Override
 	public void run()
 	{
 		while (isRunning())
 		{
+			lastRan = Instant.now();
+
 			final Timer.Context timer;
 
 			if (calls != null)
@@ -66,6 +127,7 @@ public abstract class GuiceRecurringDaemon extends GuiceDaemon
 
 			try
 			{
+				userCodeRunning = true;
 				execute();
 			}
 			catch (Throwable t)
@@ -77,6 +139,8 @@ public abstract class GuiceRecurringDaemon extends GuiceDaemon
 			}
 			finally
 			{
+				userCodeRunning = false;
+
 				if (timer != null)
 					timer.stop();
 			}
@@ -87,6 +151,12 @@ public abstract class GuiceRecurringDaemon extends GuiceDaemon
 				sleep(sleepTime);
 			}
 		}
+	}
+
+
+	public Instant getLastRan()
+	{
+		return this.lastRan;
 	}
 
 
@@ -120,5 +190,31 @@ public abstract class GuiceRecurringDaemon extends GuiceDaemon
 		this.exceptions = metrics.meter(GuiceMetricNames.name(getClass(), "exceptions"));
 
 		super.postConstruct();
+	}
+
+
+	/**
+	 * Trigger the user code to run ASAP
+	 *
+	 * @throws IllegalStateException
+	 * 		if the user code is already running or if the daemon is stopped
+	 */
+	public void trigger()
+	{
+		if (userCodeRunning)
+		{
+			throw new IllegalStateException("User code already running!");
+		}
+		else if (!isRunning())
+		{
+			throw new IllegalStateException("Daemon is in the process of terminating!");
+		}
+		else
+		{
+			synchronized (this)
+			{
+				this.notifyAll();
+			}
+		}
 	}
 }

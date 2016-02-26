@@ -4,26 +4,26 @@
 
 	<groupId>com.peterphi.std.guice</groupId>
 	<artifactId>stdlib-guice-parent</artifactId>
-	<version>7.7.1-SNAPSHOT</version>
+	<version>8.6.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>application framework guice modules parent</name>
 	<description>Application Framework Guice Modules (Parent Package)</description>
 
 	<properties>
-		<guice.version>3.2.4</guice.version>
+		<guice.version>3.2.6</guice.version>
 		<metrics.version>3.1.2</metrics.version>
-		<resteasy.version>3.0.10.Final</resteasy.version>
-		<javassist.version>3.18.2-GA</javassist.version>
-		<hibernate.version>4.3.7.Final</hibernate.version>
-		<dbunit.version>2.5.0</dbunit.version>
+		<resteasy.version>3.0.11.Final</resteasy.version>
+		<javassist.version>3.19.0-GA</javassist.version>
+		<hibernate.version>4.3.8.Final</hibernate.version>
+		<dbunit.version>2.5.1</dbunit.version>
 		<hsqldb.version>2.3.2</hsqldb.version>
 	</properties>
 
 	<parent>
 		<groupId>com.peterphi.std</groupId>
 		<artifactId>stdlib-parent</artifactId>
-		<version>7.7.1-SNAPSHOT</version>
+		<version>8.6.3-SNAPSHOT</version>
 	</parent>
 
 	<dependencyManagement>
@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.apache.xbean</groupId>
 			<artifactId>xbean-finder</artifactId>
-			<version>4.3</version>
+			<version>4.4</version>
 		</dependency>
 
 		<dependency>
@@ -73,9 +73,10 @@
 		<module>metrics</module>
 		<module>common</module>
 		<module>webapp</module>
-		<module>thymeleaf</module>
+		<module>freemarker</module>
 		<module>hibernate</module>
 		<module>hibernate-testing</module>
+		<module>liquibase</module>
 		<module>testing</module>
 		<module>restclient</module>
 		<module>sample-rest-service</module>
